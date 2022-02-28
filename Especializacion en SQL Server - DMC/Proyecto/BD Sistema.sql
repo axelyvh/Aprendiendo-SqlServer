@@ -1,0 +1,174 @@
+use master
+go
+
+IF DB_ID('Axel.Sistema') IS NOT NULL
+drop database [Axel.Sistema]
+go
+
+create database [Axel.Sistema]
+go
+
+use [Axel.Sistema]
+go
+
+DROP TABLE IF EXISTS TipoDocumento;
+GO
+CREATE TABLE TipoDocumento (
+  Codigo CHAR(2) PRIMARY KEY NOT NULL,
+  DescripcionLarga VARCHAR(50) NOT NULL,
+  DescripcionCorta VARCHAR(20) NOT NULL,
+  Longitud INT NOT NULL,
+  Estado BIT NOT NULL,
+)
+GO
+
+DROP TABLE IF EXISTS Rol;
+GO
+CREATE TABLE Rol (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Sede;
+GO
+CREATE TABLE Sede (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Direccion VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Origen;
+GO
+CREATE TABLE Origen (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Especialidad;
+GO
+CREATE TABLE Especialidad (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS EstadoCita;
+GO
+CREATE TABLE EstadoCita (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Finalizado BIT NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS FormaPago;
+GO
+CREATE TABLE FormaPago (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS EstadoPago;
+GO
+CREATE TABLE EstadoPago (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Descripcion VARCHAR(45) NOT NULL,
+  Estado bit NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Usuario;
+GO
+CREATE TABLE Usuario (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  Username VARCHAR(45) NOT NULL,
+  Password VARCHAR(45) NOT NULL,
+  Estado BIT NOT NULL,
+  Nombres VARCHAR(45) NOT NULL,
+  Apellidos VARCHAR(45) NOT NULL,
+  TipoDocumentoCodigo CHAR(2) NOT NULL REFERENCES TipoDocumento(Codigo),
+  NumDocumento BIGINT NOT NULL,
+  RolId int NOT NULL REFERENCES Rol(Id)
+)
+GO
+
+DROP TABLE IF EXISTS UsuarioSede;
+GO
+CREATE TABLE UsuarioSede (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  UsuarioId INT NOT NULL REFERENCES Usuario(Id),
+  SedeId INT NOT NULL REFERENCES Sede(Id),
+  Predeterminado bit NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Paciente;
+GO
+CREATE TABLE Paciente (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  TipoDocumentoCodigo CHAR(2) NOT NULL REFERENCES TipoDocumento(Codigo),
+  NumDocumento BIGINT NOT NULL,
+  Nombres VARCHAR(45) NOT NULL,
+  Apellidos VARCHAR(45) NOT NULL,
+  FechaNacimiento DATETIME NOT NULL,
+  OrigenId INT NOT NULL REFERENCES Origen(Id),
+  Estado BIT NOT NULL,
+  FechaCreacion DATETIME NOT NULL,
+  SedeId INT NOT NULL REFERENCES Sede(Id)
+)
+GO
+
+DROP TABLE IF EXISTS Cita;
+GO
+CREATE TABLE Cita (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  PacienteId INT NOT NULL REFERENCES Paciente(Id),
+  DoctorId INT NOT NULL REFERENCES Usuario(Id),
+  EspecialidadId INT NOT NULL REFERENCES Especialidad(Id),
+  FechaCreacion DATETIME NOT NULL,
+  SedeId INT NOT NULL REFERENCES Sede(Id)
+)
+GO
+
+DROP TABLE IF EXISTS CitaEstado;
+GO
+CREATE TABLE CitaEstado (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  CitaId INT NOT NULL REFERENCES Cita(Id),
+  EstadoCitaId INT NOT NULL REFERENCES EstadoCita(Id),
+  FechaCreacion DATETIME NOT NULL,
+  Estado BIT NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS OrdenVenta;
+GO
+CREATE TABLE OrdenVenta (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  CitaId INT NOT NULL REFERENCES Cita(Id),
+  EstadoPagoId INT NOT NULL REFERENCES EstadoPago(Id),
+  FechaCreacion DATETIME NOT NULL
+)
+GO
+
+DROP TABLE IF EXISTS Pagos;
+GO
+CREATE TABLE Pagos (
+  Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+  FormaPagoId INT NOT NULL REFERENCES FormaPago(Id),
+  OrdenVentaId INT NOT NULL REFERENCES OrdenVenta(Id),
+  Monto float NOT NULL,
+  FechaCreacion DATETIME NOT NULL,
+  Anulado BIT NOT NULL
+)
+GO
